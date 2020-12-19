@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<a href="{{ url_for('homepage') }}">Home</a>
 <h1>Post #{{ nr }}(👍{{upvotes}}/{{downvotes}}👎)</h1>
 <p style="text-decoration: underline;">
     {{ content }}
