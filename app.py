@@ -4,31 +4,22 @@ import sqlite3
 app = Flask(__name__)
 app.secret_key = 'super-secret-key-$$&'
 
-
-""" # TODO display ratings
-SELECT count(*) as 'amount votes',posts.post_id,rating 
-FROM posts, votes 
-WHERE posts.post_id = votes.post_id
-GROUP BY rating, posts.post_id
-ORDER BY 'amount votes' DESC
-LIMIT 5
-
-
-SELECT count(*),rating 
-FROM posts, votes 
-WHERE posts.post_id = votes.post_id
-AND posts.post_id = 2
-AND rating = 'good'
-GROUP BY rating, posts.post_id
-
-SELECT count(*),rating 
-FROM posts, votes 
-WHERE posts.post_id = votes.post_id
-AND posts.post_id = 2
-AND rating = 'bad'
-GROUP BY rating, posts.post_id
-"""
-
+def get_votes(post_id, rating):
+    with sqlite3.connect('posts.db') as conn:
+        cursor = conn.execute("""
+            SELECT count(*) 
+            FROM posts, votes 
+            WHERE posts.post_id = votes.post_id
+            AND posts.post_id = ?
+            AND rating = ?
+            GROUP BY rating, posts.post_id
+            """, (post_id, rating))
+        row = cursor.fetchone()
+        if row == None:
+            # no votes yet
+            return 0
+        else:
+            return row[0]
 
 @app.route('/', methods=['GET', 'POST'])
 def homepage():
@@ -58,7 +49,10 @@ def view_post(post_id):
             ' WHERE post_id = ?', (post_id,))
         row = cursor.fetchone()
         if row != None:
-            return render_template('showpost.html', content=row[1], nr=row[0])
+            post_id = row[0]
+            upvotes = get_votes(post_id, 'good')
+            downvotes = get_votes(post_id, 'bad')
+            return render_template('showpost.html', content=row[1], nr=post_id, upvotes=upvotes, downvotes=downvotes)
     return "Post could not be found", 404
 
 @app.route('/vote')
