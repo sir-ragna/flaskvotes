@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Post #{{ nr }}</h1>
+<p style="text-decoration: underline;">
+    {{ content }}
+</p>
+<button onclick="vote({{nr}}, 'good')">👍</button>
+<button onclick="vote({{nr}}, 'bad')">👎</button>
+
+<script>
+function vote(post_id, rating) {
+    fetch('/vote?' + new URLSearchParams({post_id:post_id, rating:rating})).then(function (resp) {
+        if (resp.status == 200) {
+            alert('votes successfully');
+        } else {
+            resp.text().then((str) => {alert("failed to vote\n" + str)})
+        }
+    });
+}
+</script>
+
+{% endblock content %}

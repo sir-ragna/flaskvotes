@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Home page</h1>
+<ul>
+    <li>
+        <a href="{{ url_for('post') }}">Create a Post</a>
+    </li>
+</ul>
+{% if username %}
+<span>signed in as:</span><b>{{username}}</b>
+<a href="{{ url_for('signoff') }}">signoff</a>
+{% else %}
+<form action="{{ url_for('homepage') }}" method="post">
+    <label for="username">username</label><input type="text" id="username" name="username">
+    <button type="submit">sign-in</button>
+</form>
+{% endif %}
+
+{% endblock content %}
