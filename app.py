@@ -7,7 +7,7 @@ app.config['DATABASE'] = 'posts.db'
 
 def get_votes(post_id, rating):
     """Database helper function to retrieve the votes of a post.
-    get_votes(1, 'good') # will return all 'good' votes for post 1"""
+    get_votes(1, -1) # will return all -1 votes for post 1"""
     with sqlite3.connect(app.config['DATABASE']) as conn:
         cursor = conn.execute("""
             SELECT count(*) 
@@ -19,8 +19,7 @@ def get_votes(post_id, rating):
             """, (post_id, rating))
         row = cursor.fetchone()
         if row == None:
-            # no votes yet
-            return 0
+            return 0 # no votes yet
         else:
             return row[0]
 
@@ -74,8 +73,8 @@ def view_post(post_id):
         row = cursor.fetchone()
         if row != None:
             post_id = row[0]
-            upvotes = get_votes(post_id, 'good')
-            downvotes = get_votes(post_id, 'bad')
+            upvotes = get_votes(post_id, 1)
+            downvotes = get_votes(post_id, -1)
             return render_template('showpost.html', content=row[1], nr=post_id, upvotes=upvotes, downvotes=downvotes)
     return "Post could not be found", 404
 
