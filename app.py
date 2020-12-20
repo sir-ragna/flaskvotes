@@ -100,10 +100,12 @@ def vote():
             conn.execute("""INSERT INTO votes (post_id, username, rating) 
             VALUES (?, ?, ?)""", (post_id, session['username'], rating))
             conn.commit()
+            return "Voted!", 200
     except sqlite3.IntegrityError as ex:
         return "Already voted (forbidden)", 403
-    
-    return "Voted!", 200
+    except Exception as ex:
+        app.logger.error("{}".format(ex))
+        return "Something went wrong", 500
 
 @app.route('/signoff')
 def signoff():
