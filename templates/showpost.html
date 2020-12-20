@@ -15,7 +15,10 @@ function vote(post_id, rating) {
         if (resp.status == 200) {
             alert('votes successfully');
         } else {
-            resp.text().then((str) => {alert("failed to vote\n" + str)})
+            resp.text().then((message) => {
+                /* Print the message we got back from the server */
+                alert("failed to vote\n" + message)
+            })
         }
     });
 }
