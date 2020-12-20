@@ -21,8 +21,8 @@
 <h3>Top posts</h3>
 <ol>
     {% for post in posts %}
-        <li><a href="{{ url_for('view_post', post_id=post['post_id']) }}">
-            Post nr{{post['post_id']}}({{post['good_votes']}} upvotes)</a></li>
+        <li>[{{post['score']}}]<a href="{{ url_for('view_post', post_id=post['post_id']) }}">
+            Post nr{{post['post_id']}}</a></li>
     {% else %}
     <li>
         <b>No posts yet</b>

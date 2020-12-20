@@ -28,16 +28,20 @@ def get_top_posts(limit=5):
     """Retrieve the top rated posts. Default limit=5"""
     with sqlite3.connect(app.config['DATABASE']) as conn:
         cursor = conn.execute("""
-            SELECT count(*), posts.post_id 
-            FROM posts, votes 
-            WHERE posts.post_id = votes.post_id
-            AND rating = 'good'
-            GROUP BY rating, posts.post_id
+            SELECT posts.post_id, SUM(
+                CASE WHEN votes.rating IS NULL 
+                    THEN 0 
+                    ELSE votes.rating 
+                END) as 'score'
+            FROM posts
+            LEFT JOIN votes on posts.post_id = votes.post_id
+            GROUP BY posts.post_id
+            ORDER BY score DESC
             LIMIT ?
             """, (limit,))
         posts = []
         for row in cursor.fetchall():
-            posts.append({'good_votes': row[0], 'post_id': row[1]})
+            posts.append({'post_id': row[0], 'score': row[1]})
         return posts
 
 @app.route('/', methods=['GET', 'POST'])
@@ -79,10 +83,18 @@ def view_post(post_id):
 def vote():
     post_id = request.args.get('post_id')
     rating = request.args.get('rating')
+
     if post_id == None:
         return "Cannot vote without post_id", 403
     if not 'username' in session:
         return "Not authenticated", 401
+
+    if rating == 'good':
+        rating = 1
+    elif rating == 'bad':
+        rating = -1
+    else:
+        return "Invalid score provided", 400
 
     try:
         with sqlite3.connect(app.config['DATABASE']) as conn:
