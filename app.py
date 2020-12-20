@@ -6,6 +6,8 @@ app.secret_key = 'super-secret-key-$$&'
 app.config['DATABASE'] = 'posts.db'
 
 def get_votes(post_id, rating):
+    """Database helper function to retrieve the votes of a post.
+    get_votes(1, 'good') # will return all 'good' votes for post 1"""
     with sqlite3.connect(app.config['DATABASE']) as conn:
         cursor = conn.execute("""
             SELECT count(*) 
@@ -22,6 +24,22 @@ def get_votes(post_id, rating):
         else:
             return row[0]
 
+def get_top_posts(limit=5):
+    """Retrieve the top rated posts. Default limit=5"""
+    with sqlite3.connect(app.config['DATABASE']) as conn:
+        cursor = conn.execute("""
+            SELECT count(*), posts.post_id 
+            FROM posts, votes 
+            WHERE posts.post_id = votes.post_id
+            AND rating = 'good'
+            GROUP BY rating, posts.post_id
+            LIMIT ?
+            """, (limit,))
+        posts = []
+        for row in cursor.fetchall():
+            posts.append({'good_votes': row[0], 'post_id': row[1]})
+        return posts
+
 @app.route('/', methods=['GET', 'POST'])
 def homepage():
     username = None
@@ -29,7 +47,8 @@ def homepage():
         session['username'] = request.form['username']
     if 'username' in session:
         username = session['username']
-    return render_template('home.html', username=username)
+
+    return render_template('home.html', username=username, posts=get_top_posts())
 
 @app.route('/post', methods=['GET', 'POST'])
 def post():
