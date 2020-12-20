@@ -3,9 +3,10 @@ import sqlite3
 
 app = Flask(__name__)
 app.secret_key = 'super-secret-key-$$&'
+app.config['DATABASE'] = 'posts.db'
 
 def get_votes(post_id, rating):
-    with sqlite3.connect('posts.db') as conn:
+    with sqlite3.connect(app.config['DATABASE']) as conn:
         cursor = conn.execute("""
             SELECT count(*) 
             FROM posts, votes 
@@ -34,7 +35,7 @@ def homepage():
 def post():
     if request.method == 'POST' and 'content' in request.form:
         content = request.form['content']
-        with sqlite3.connect('posts.db') as conn:
+        with sqlite3.connect(app.config['DATABASE']) as conn:
             cursor = conn.execute('INSERT INTO posts (post_content) VALUES (?)', (content,))
             post_id = cursor.lastrowid
             conn.commit()
@@ -44,7 +45,7 @@ def post():
 
 @app.route('/post/<int:post_id>', methods=['GET', 'POST'])
 def view_post(post_id):
-    with sqlite3.connect('posts.db') as conn:
+    with sqlite3.connect(app.config['DATABASE']) as conn:
         cursor = conn.execute('SELECT post_id, post_content FROM posts'
             ' WHERE post_id = ?', (post_id,))
         row = cursor.fetchone()
@@ -65,7 +66,7 @@ def vote():
         return "Not authenticated", 401
 
     try:
-        with sqlite3.connect('posts.db') as conn:
+        with sqlite3.connect(app.config['DATABASE']) as conn:
             conn.execute("""INSERT INTO votes (post_id, username, rating) 
             VALUES (?, ?, ?)""", (post_id, session['username'], rating))
             conn.commit()
