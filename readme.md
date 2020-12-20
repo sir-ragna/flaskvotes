@@ -1,10 +1,8 @@
 
 # Tracking votes on content
 
-When trying to keep track of a number of votes can be tricky.
-
 Trying to track the number on votes on the content can be tricky.
-Here is an example.
+Here is a naive way to track votes and a proposed solution.
 
 |post_id|post_content|score|
 |:------|:-----------|----:|
@@ -83,8 +81,8 @@ _NULL_ manifests. This can be achieved with the following code.
 CASE WHEN votes.rating IS NULL THEN 0 ELSE votes.rating 
 ```
 
-This is a simple `if` statement. Our full query as found in the 
-`get_top_posts`-function.
+This is the equivalent of an `if` statement. 
+Our full query as found in the `get_top_posts`-function.
 
 ```sql
 SELECT posts.post_id, SUM(
